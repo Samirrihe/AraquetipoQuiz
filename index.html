@@ -1,885 +1,266 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>¿Cuál es tu Arquetipo de Marca?</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-  :root {
-    --bg: #070a0f;
-    --surface: #0d1219;
-    --surface2: #111820;
-    --border: rgba(255,255,255,0.07);
-    --text: #e8edf5;
-    --muted: #5a6478;
-    --accent: #00d4ff;
-    --accent2: #7c3aed;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Archetype Quiz | Samsung Framework</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --bg: #05070a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #3b82f6; /* Samsung Blue */
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
 
-    --gobernante: #f59e0b;
-    --creador:    #10b981;
-    --companero:  #3b82f6;
-    --mago:       #8b5cf6;
-    --sabio:      #06b6d4;
-    --heroe:      #ef4444;
-  }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-  body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    overflow-x: hidden;
-  }
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
 
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
+        h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3.5rem;
+            text-align: center;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ffffff, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-  /* Ambient glow */
-  .glow-top {
-    position: fixed;
-    top: -200px; left: 50%;
-    transform: translateX(-50%);
-    width: 700px; height: 400px;
-    background: radial-gradient(ellipse, rgba(0,212,255,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
 
-  #app {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 680px;
-  }
+        /* Pantallas */
+        .screen { display: none; animation: fadeIn 0.6s ease forwards; }
+        .screen.active { display: block; }
 
-  /* ─── SCREENS ─── */
-  .screen {
-    display: none;
-    animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .screen.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+        /* Preguntas */
+        .question-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.3;
+        }
 
-  /* ─── INTRO ─── */
-  .intro-header {
-    text-align: center;
-    padding: 20px 0 32px;
-  }
-  .brand-tag {
-    display: inline-block;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid rgba(0,212,255,0.3);
-    padding: 5px 14px;
-    border-radius: 100px;
-    margin-bottom: 28px;
-  }
-  .intro-header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(52px, 10vw, 82px);
-    line-height: 0.95;
-    letter-spacing: 1px;
-    background: linear-gradient(135deg, #fff 30%, #00d4ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 20px;
-  }
-  .intro-header p {
-    color: var(--muted);
-    font-size: 15px;
-    line-height: 1.7;
-    max-width: 460px;
-    margin: 0 auto 32px;
-  }
+        .options-list {
+            display: grid;
+            gap: 15px;
+        }
 
-  .brands-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 36px;
-  }
-  .brand-pill {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 100px;
-    border: 1px solid;
-    letter-spacing: 0.5px;
-  }
-  .pill-samsung { color: var(--gobernante); border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.06); }
-  .pill-apple   { color: var(--creador);    border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.06); }
-  .pill-xiaomi  { color: var(--companero);  border-color: rgba(59,130,246,0.35); background: rgba(59,130,246,0.06); }
-  .pill-huawei  { color: var(--mago);       border-color: rgba(139,92,246,0.35); background: rgba(139,92,246,0.06); }
-  .pill-pixel   { color: var(--sabio);      border-color: rgba(6,182,212,0.35);  background: rgba(6,182,212,0.06); }
-  .pill-oneplus { color: var(--heroe);      border-color: rgba(239,68,68,0.35);  background: rgba(239,68,68,0.06); }
+        .option-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            padding: 20px 25px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
 
-  /* ─── BUTTON ─── */
-  .btn-primary {
-    display: block;
-    width: 100%;
-    padding: 18px 24px;
-    background: var(--accent);
-    color: #000;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0,212,255,0.3);
-  }
-  .btn-primary:active { transform: translateY(0); }
+        .option-card:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+            transform: translateX(10px);
+        }
 
-  /* ─── PROGRESS ─── */
-  .progress-bar {
-    background: var(--surface2);
-    border-radius: 100px;
-    height: 4px;
-    margin-bottom: 28px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    border-radius: 100px;
-    transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
-  }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
+        /* Modo Presentación (Resultados) */
+        .result-header { text-align: center; margin-bottom: 40px; }
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
 
-  /* ─── QUESTION ─── */
-  .question-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 32px;
-  }
-  .question-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  .question-text {
-    font-size: clamp(18px, 3.5vw, 22px);
-    font-weight: 600;
-    line-height: 1.4;
-    color: #fff;
-    margin-bottom: 28px;
-  }
-  .options-grid {
-    display: grid;
-    gap: 10px;
-  }
-  .option-btn {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 16px 18px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-    font-family: 'Space Grotesk', sans-serif;
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.5;
-    width: 100%;
-  }
-  .option-btn:hover {
-    border-color: rgba(0,212,255,0.4);
-    background: rgba(0,212,255,0.05);
-    transform: translateX(4px);
-  }
-  .option-btn.selected {
-    border-color: var(--accent);
-    background: rgba(0,212,255,0.1);
-  }
-  .option-letter {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
-    transition: all 0.2s;
-    margin-top: 1px;
-  }
-  .option-btn.selected .option-letter {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #000;
-  }
+        .presentation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
 
-  .btn-next {
-    display: block;
-    width: 100%;
-    padding: 16px 24px;
-    background: transparent;
-    color: var(--accent);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    border: 1px solid rgba(0,212,255,0.35);
-    border-radius: 12px;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: all 0.2s;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .btn-next.ready {
-    opacity: 1;
-    pointer-events: all;
-  }
-  .btn-next:hover {
-    background: rgba(0,212,255,0.08);
-    border-color: var(--accent);
-  }
+        .arg-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 12px;
+        }
 
-  /* ─── RESULT ─── */
-  .result-header {
-    text-align: center;
-    padding-bottom: 24px;
-  }
-  .result-tag {
-    display: inline-block;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-  .archetype-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 22px;
-    border-radius: 100px;
-    border: 2px solid;
-    margin-bottom: 12px;
-  }
-  .archetype-icon { font-size: 22px; }
-  .archetype-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-  }
+        .arg-card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
 
-  .brand-result-card {
-    border-radius: 20px;
-    border: 1px solid;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-  .brand-result-header {
-    padding: 24px 28px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .brand-logo-area {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-  .brand-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    background: var(--surface2);
-  }
-  .brand-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    line-height: 1;
-    letter-spacing: 1px;
-  }
-  .brand-tagline {
-    font-size: 13px;
-    color: var(--muted);
-    font-style: italic;
-    margin-top: 2px;
-  }
-  .brand-desc {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.7;
-    opacity: 0.85;
-  }
+        .arg-card p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
 
-  .brand-result-body {
-    padding: 24px 28px;
-  }
-  .arg-section {
-    margin-bottom: 20px;
-  }
-  .arg-section:last-child { margin-bottom: 0; }
-  .arg-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .arg-label::before {
-    content: '';
-    display: inline-block;
-    width: 20px;
-    height: 1px;
-    background: currentColor;
-  }
-  .arg-text {
-    font-size: 14px;
-    line-height: 1.7;
-    color: var(--text);
-    opacity: 0.9;
-  }
+        /* Footer / QR */
+        .footer-tools {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 30px;
+        }
 
-  /* ─── COMPETITOR MAP ─── */
-  .competitors-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 16px;
-  }
-  .comp-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-  .comp-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  @media(max-width:480px) { .comp-grid { grid-template-columns: 1fr; } }
-  .comp-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .comp-item.is-you { border-color: currentColor; opacity: 1; }
-  .comp-emoji { font-size: 18px; }
-  .comp-info { flex: 1; }
-  .comp-brand { font-size: 13px; font-weight: 600; }
-  .comp-arch  { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .you-tag {
-    font-size: 9px;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 1px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: currentColor;
-    color: var(--bg);
-    font-weight: 700;
-  }
+        #qrcode {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
 
-  /* QR section */
-  .qr-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-  .qr-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-  .qr-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 18px;
-  }
-  #qrcode {
-    display: inline-block;
-    padding: 12px;
-    background: #fff;
-    border-radius: 12px;
-    margin-bottom: 14px;
-  }
-  .qr-url {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    word-break: break-all;
-  }
+        .btn-action {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
 
-  .btn-retry {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    color: var(--muted);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 40px;
-  }
-  .btn-retry:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+        .btn-action:hover { transform: scale(1.05); }
 
-  /* pulse animation for result */
-  @keyframes pulse-ring {
-    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,212,255,0.4); }
-    70%  { transform: scale(1);    box-shadow: 0 0 0 16px rgba(0,212,255,0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,212,255,0); }
-  }
-</style>
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+            .container { padding: 25px; }
+        }
+    </style>
 </head>
 <body>
-<div class="glow-top"></div>
-<div id="app">
 
-  <!-- ══════════ INTRO ══════════ -->
-  <div id="screen-intro" class="screen active">
-    <div class="intro-header">
-      <div class="brand-tag">🎓 Arquetipos de Marca · Samsung</div>
-      <h1>¿Con qué marca<br>te identificas?</h1>
-      <p>Responde 6 preguntas y descubre cuál es tu arquetipo dominante — y qué competidor de Samsung lo representa mejor.</p>
-      <div class="brands-row">
-        <span class="brand-pill pill-samsung">👑 Samsung</span>
-        <span class="brand-pill pill-apple">🍎 Apple</span>
-        <span class="brand-pill pill-xiaomi">📱 Xiaomi</span>
-        <span class="brand-pill pill-huawei">✨ Huawei</span>
-        <span class="brand-pill pill-pixel">🔍 Google Pixel</span>
-        <span class="brand-pill pill-oneplus">⚡ OnePlus</span>
-      </div>
-      <button class="btn-primary" onclick="startQuiz()">Comenzar el quiz →</button>
-    </div>
-  </div>
-
-  <!-- ══════════ QUIZ ══════════ -->
-  <div id="screen-quiz" class="screen">
-    <div class="progress-label">
-      <span id="prog-label">PREGUNTA 1 DE 6</span>
-      <span id="prog-pct">0%</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-    <div class="question-card">
-      <div class="question-num" id="q-num">01 / 06</div>
-      <div class="question-text" id="q-text"></div>
-      <div class="options-grid" id="options-grid"></div>
-      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente pregunta →</button>
-    </div>
-  </div>
-
-  <!-- ══════════ RESULT ══════════ -->
-  <div id="screen-result" class="screen">
-    <div class="result-header">
-      <div class="result-tag">Tu resultado</div><br>
-      <div class="archetype-badge" id="arch-badge">
-        <span class="archetype-icon" id="arch-icon"></span>
-        <span class="archetype-name" id="arch-name"></span>
-      </div>
-    </div>
-
-    <div class="brand-result-card" id="brand-card">
-      <div class="brand-result-header">
-        <div class="brand-logo-area">
-          <div class="brand-icon" id="brand-icon"></div>
-          <div>
-            <div class="brand-name" id="brand-name"></div>
-            <div class="brand-tagline" id="brand-tagline"></div>
-          </div>
+<div class="container">
+    <div id="start-screen" class="screen active">
+        <h1>Brand Archetyping</h1>
+        <p class="subtitle">Diagnóstico Estratégico Socialización</p>
+        <div style="text-align: center;">
+            <p style="margin-bottom: 30px; color: var(--text-muted);">Descubre el arquetipo que domina tu marca y genera los argumentos para tu entorno competitivo.</p>
+            <button class="btn-action" onclick="showScreen('quiz-screen')">Empezar Diagnóstico</button>
         </div>
-        <div class="brand-desc" id="brand-desc"></div>
-      </div>
-      <div class="brand-result-body">
-        <div class="arg-section">
-          <div class="arg-label">Propósito / Esencia de Marca</div>
-          <div class="arg-text" id="arg-proposito"></div>
-        </div>
-        <div class="arg-section">
-          <div class="arg-label">Comunicación de Marca</div>
-          <div class="arg-text" id="arg-comunicacion"></div>
-        </div>
-        <div class="arg-section">
-          <div class="arg-label">Entorno Competitivo</div>
-          <div class="arg-text" id="arg-competitivo"></div>
-        </div>
-      </div>
     </div>
 
-    <div class="competitors-section">
-      <div class="comp-title">Mapa de arquetipos — Competidores de Samsung</div>
-      <div class="comp-grid" id="comp-grid"></div>
+    <div id="quiz-screen" class="screen">
+        <div id="progress-text" style="color: var(--accent); margin-bottom: 10px; font-weight: 700;">Pregunta 1 de 5</div>
+        <div id="question-content">
+            <h2 class="question-title" id="q-title">Cargando...</h2>
+            <div class="options-list" id="q-options"></div>
+        </div>
     </div>
 
-    <div class="qr-section">
-      <div class="qr-title">¡Comparte el quiz con tu grupo!</div>
-      <div class="qr-sub">Escanea para que todos descubran su arquetipo</div>
-      <div id="qrcode"></div>
-      <div class="qr-url" id="qr-url-label"></div>
+    <div id="result-screen" class="screen">
+        <div class="result-header">
+            <div class="badge">Resultado del Análisis</div>
+            <h1 id="res-archetype">El Gobernante</h1>
+            <p id="res-tagline" style="color: var(--accent); font-weight: 500;"></p>
+        </div>
+
+        <div class="presentation-grid">
+            <div class="arg-card">
+                <h3>1. Propósito / Esencia</h3>
+                <p id="arg-purpose"></p>
+            </div>
+            <div class="arg-card">
+                <h3>2. Comunicación</h3>
+                <p id="arg-comm"></p>
+            </div>
+            <div class="arg-card">
+                <h3>3. Entorno Competitivo</h3>
+                <p id="arg-comp"></p>
+            </div>
+        </div>
+
+        <div class="footer-tools">
+            <div id="qrcode"></div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Escanea este QR para compartir el diagnóstico interactivo</p>
+            <button class="btn-action" style="background: transparent; border: 1px solid var(--text-muted);" onclick="location.reload()">Realizar de nuevo</button>
+        </div>
     </div>
-
-    <button class="btn-retry" onclick="restartQuiz()">↩ Volver a intentarlo</button>
-  </div>
-
 </div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────
-const questions = [
-  {
-    text: "¿Cómo defines tu relación con la tecnología?",
-    options: [
-      { text: "La uso para mantener el control y liderar. Me gusta dominar los estándares de mi entorno.", archetype: "gobernante" },
-      { text: "La uso para crear cosas nuevas que nunca antes existieron. Es mi herramienta de expresión.", archetype: "creador" },
-      { text: "La uso para conectarme con todos sin barreras. Que sea fácil y accesible para cualquiera.", archetype: "companero" },
-      { text: "La uso para transformar mi realidad de formas que otros ni imaginan. Es casi como magia.", archetype: "mago" }
-    ]
-  },
-  {
-    text: "¿Cuál de estas frases te representa mejor?",
-    options: [
-      { text: "\"Analizo todo con profundidad. Quien tiene el conocimiento tiene el poder real.\"", archetype: "sabio" },
-      { text: "\"Defino los estándares. El resto del mercado me sigue a mí.\"", archetype: "gobernante" },
-      { text: "\"Nada me detiene. Siempre busco ir más allá de mis propios límites.\"", archetype: "heroe" },
-      { text: "\"El diseño y la estética son lo que hace grande a algo, no solo la función.\"", archetype: "creador" }
-    ]
-  },
-  {
-    text: "En un grupo, ¿cuál es tu papel natural?",
-    options: [
-      { text: "El que une a todos y hace que el grupo funcione en armonía. Soy el puente entre personas.", archetype: "companero" },
-      { text: "El que siempre tiene el truco oculto o la solución que nadie esperaba.", archetype: "mago" },
-      { text: "El que establece las reglas y mantiene el orden. Sin estructura, nada funciona.", archetype: "gobernante" },
-      { text: "El que reta los límites y siempre quiere llevar todo al siguiente nivel.", archetype: "heroe" }
-    ]
-  },
-  {
-    text: "¿Cuál de estas palabras resuena más contigo?",
-    options: [
-      { text: "✦ CREATIVIDAD — Innovar a través del arte y el diseño", archetype: "creador" },
-      { text: "✦ SABIDURÍA — Entender el mundo con datos e inteligencia", archetype: "sabio" },
-      { text: "✦ TRANSFORMACIÓN — Cambiar la realidad con tecnología sin precedentes", archetype: "mago" },
-      { text: "✦ ACCESIBILIDAD — Llevar la tecnología a quien más lo necesita", archetype: "companero" }
-    ]
-  },
-  {
-    text: "¿Cómo describes tu manera de innovar?",
-    options: [
-      { text: "Con disciplina y estándares que pocos pueden alcanzar. La excelencia es no negociable.", archetype: "gobernante" },
-      { text: "Con intuición creativa que rompe los moldes establecidos. Yo propongo lo que otros copian.", archetype: "creador" },
-      { text: "Con análisis profundo de datos que revela verdades ocultas. La evidencia guía mi camino.", archetype: "sabio" },
-      { text: "Con tecnología que para los demás parece cosa de otro mundo. Veo el futuro antes.", archetype: "mago" }
-    ]
-  },
-  {
-    text: "¿Qué es lo más importante en una marca de tecnología?",
-    options: [
-      { text: "Que sea accesible y conecte con la gente real, no con una élite privilegiada.", archetype: "companero" },
-      { text: "Que me dé el mayor rendimiento posible. No acepto ser segundo en velocidad o potencia.", archetype: "heroe" },
-      { text: "Que me inspire a crear algo propio. Una herramienta para artistas y visionarios.", archetype: "creador" },
-      { text: "Que sea inteligente y me ayude a tomar mejores decisiones con información real.", archetype: "sabio" }
-    ]
-  }
-];
-
-const archetypes = {
-  gobernante: {
-    name: "EL GOBERNANTE",
-    icon: "👑",
-    color: "#f59e0b",
-    brand: "Samsung",
-    brandIcon: "📺",
-    tagline: "Do What You Can't",
-    desc: "Eres el arquetipo del Gobernante: buscas el poder, la excelencia y defines los estándares de calidad en tu industria. Dominas el ecosistema tecnológico con visión estratégica de largo plazo.",
-    proposito: "Samsung dedica su talento y tecnología a crear productos y servicios superiores, contribuyendo a la sociedad. Su esencia: GRANDE (escala global como 1° o 2° vendedor mundial), FUERTE (productos superiores, alto valor en personas y tecnología) y ETERNA (se anticipa a las necesidades del mercado para orientar el éxito a largo plazo).",
-    comunicacion: "Su narrativa integra tres ejes: COMUNIDAD (campañas hiperlocales que conectan con personas reales), PODER (énfasis en rendimiento y ecosistema integrado) y BRILLO (innovación visible en IA, pantallas plegables y cámaras avanzadas). Proyecta empoderamiento sin perder cercanía.",
-    competitivo: "Lleva más de una década alternando entre el primer y segundo lugar mundial en smartphones. Estrategia 'Global to Local' con más de 200 millones de dispositivos vendidos al año e inversión de 11 mil millones de dólares anuales en marketing. Portafolio que cubre desde gama media hasta ultra premium."
-  },
-  creador: {
-    name: "EL CREADOR",
-    icon: "🎨",
-    color: "#10b981",
-    brand: "Apple",
-    brandIcon: "🍎",
-    tagline: "Think Different",
-    desc: "Eres el arquetipo del Creador: generas valor verdadero a través del diseño y la experiencia. El arte y la tecnología son lo mismo para ti. No construyes productos, construyes mundos.",
-    proposito: "Apple nació con el propósito de empoderar a los individuos con herramientas creativas que antes solo existían para corporaciones. Su esencia es la unión perfecta entre tecnología y humanidades, donde el diseño no es decoración — es la función misma.",
-    comunicacion: "Campaigns que celebran la creatividad humana: 'Shot on iPhone', '1984', 'Here's to the Crazy Ones'. Cada lanzamiento es un evento cultural. La comunicación no habla de specs, habla de lo que puedes crear con esos specs. El usuario es el protagonista creativo.",
-    competitivo: "Lidera el segmento premium global con márgenes que ningún competidor puede replicar. Su ecosistema (iPhone, Mac, iPad, Apple Watch, iCloud) genera un efecto de red que hace casi imposible la migración. Controla hardware, software y servicios como ningún otro competidor."
-  },
-  companero: {
-    name: "EL COMPAÑERO",
-    icon: "🤝",
-    color: "#3b82f6",
-    brand: "Xiaomi",
-    brandIcon: "📱",
-    tagline: "Innovation for Everyone",
-    desc: "Eres el arquetipo del Compañero (Everyman): crees profundamente que la tecnología debe conectar a todos sin exclusión. La accesibilidad es tu valor más alto. No compites por ser el mejor, compites por llegar a todos.",
-    proposito: "Xiaomi nació con el propósito de democratizar la tecnología premium. Su esencia: innovación accesible y sostenible, utilidad sobre la moda, seguridad y confianza para todos. La innovación no es un lujo vacío — es un recurso con propósito para mejorar lo cotidiano.",
-    comunicacion: "Estrategia basada en la comunidad Mi Fans: marketing de boca en boca, lanzamientos flash, redes sociales y co-creación con usuarios. Cercana, confiable y moderna. Inclusiva y auténtica, conectando con jóvenes adultos que buscan equilibrio entre funcionalidad y estilo.",
-    competitivo: "Domina el mercado masivo en Asia, Europa y América Latina con la mejor relación calidad-precio. Ecosistema accesible y sostenible que incluye desde smartphones hasta IoT. Estrategia de modernidad sin necesidad de lujo: rendimiento rápido, batería larga, cámara de calidad."
-  },
-  mago: {
-    name: "EL MAGO",
-    icon: "✨",
-    color: "#8b5cf6",
-    brand: "Huawei",
-    brandIcon: "🌐",
-    tagline: "Build a Fully Connected, Intelligent World",
-    desc: "Eres el arquetipo del Mago: usas el conocimiento para transformar el mundo de maneras que nadie más puede. Tu tecnología parece magia. Ves el futuro antes que los demás y lo haces realidad.",
-    proposito: "Huawei existe para construir un mundo completamente conectado e inteligente. Su esencia es el conocimiento como herramienta de transformación: quien domina la tecnología profunda (semiconductores, IA, 5G) domina el futuro. Transformar lo que parece imposible en inevitable.",
-    comunicacion: "Énfasis en capacidades de cámara de vanguardia (colaboraciones con Leica), inteligencia artificial integrada en cada chip, y tecnología que trasciende el hardware. Comunicación aspiracional que mezcla ingeniería y arte. Sus campañas posicionan el dispositivo como extensión de la creatividad humana.",
-    competitivo: "Desarrolló su propio ecosistema HarmonyOS ante sanciones internacionales, demostrando resiliencia única. Lidera en infraestructura 5G global. Su capacidad de innovar bajo presión extrema la convierte en la marca más resiliente del sector. Desafía el orden establecido desde adentro."
-  },
-  sabio: {
-    name: "EL SABIO",
-    icon: "🔍",
-    color: "#06b6d4",
-    brand: "Google Pixel",
-    brandIcon: "🎯",
-    tagline: "See What's Possible",
-    desc: "Eres el arquetipo del Sabio: buscas entender el mundo a través de los datos. La inteligencia es tu mayor herramienta. No te conformas con respuestas superficiales — buscas la verdad detrás de los fenómenos.",
-    proposito: "Google Pixel nació con el propósito de poner la inteligencia de Google directamente en las manos de las personas. Su esencia: la IA como reveladora de verdades ocultas, organizar la información del mundo y hacerla universalmente accesible y útil en el dispositivo más personal.",
-    comunicacion: "Campañas centradas en la IA fotográfica: Real Tone (representación auténtica de todos los tonos de piel), Night Sight, Magic Eraser. 'See What's Possible' — la tecnología como herramienta para ver el mundo con mayor claridad y profundidad. La IA no como truco, sino como revelación.",
-    competitivo: "Única marca que integra modelos de IA propios (Gemini) directamente en el hardware. Lidera en experiencia de software puro Android y actualizaciones garantizadas por 7 años. Captura insights del ecosistema de búsqueda de Google para anticipar necesidades del usuario antes de que las exprese."
-  },
-  heroe: {
-    name: "EL HÉROE",
-    icon: "⚡",
-    color: "#ef4444",
-    brand: "OnePlus",
-    brandIcon: "🔴",
-    tagline: "Never Settle",
-    desc: "Eres el arquetipo del Héroe: no aceptas límites. Buscas el máximo rendimiento y desafías el status quo constantemente. Tu motivación es superar obstáculos y demostrar que siempre se puede ir más lejos.",
-    proposito: "OnePlus nació con el lema 'Never Settle' — nunca conformarse con menos del máximo rendimiento posible. Su esencia es el desafío constante al status quo: ofrecer rendimiento de flagship a precio desafiante, demostrando que la excelencia no debería ser un privilegio de pocos.",
-    comunicacion: "Comunidad de early adopters y tech enthusiasts que co-crean la marca. Lanzamientos exclusivos con sistema de invitaciones que generaron culto. Campañas que celebran la velocidad: carga ultrarrápida, pantallas de alta tasa de refresco, rendimiento extremo como identidad. El usuario es un ganador.",
-    competitivo: "Nació como 'flagship killer' — destruir la noción de que el mejor rendimiento cuesta más. Desafió directamente a Samsung, Apple y Huawei con specs superiores a mitad de precio. Hoy compite en el segmento premium con propuesta diferenciada en velocidad, pantalla y experiencia de carga."
-  }
-};
-
-const allCompetitors = [
-  { key: "gobernante", brand: "Samsung",      icon: "📺", archLabel: "El Gobernante" },
-  { key: "creador",    brand: "Apple",         icon: "🍎", archLabel: "El Creador" },
-  { key: "companero",  brand: "Xiaomi",        icon: "📱", archLabel: "El Compañero" },
-  { key: "mago",       brand: "Huawei",        icon: "🌐", archLabel: "El Mago" },
-  { key: "sabio",      brand: "Google Pixel",  icon: "🎯", archLabel: "El Sabio" },
-  { key: "heroe",      brand: "OnePlus",       icon: "🔴", archLabel: "El Héroe" }
-];
-
-// ── STATE ─────────────────────────────────────────────────────────
-let currentQ = 0;
-let scores = { gobernante:0, creador:0, companero:0, mago:0, sabio:0, heroe:0 };
-let selectedOption = null;
-
-// ── QUIZ LOGIC ────────────────────────────────────────────────────
-function startQuiz() {
-  currentQ = 0;
-  scores = { gobernante:0, creador:0, companero:0, mago:0, sabio:0, heroe:0 };
-  showScreen('quiz');
-  renderQuestion();
-}
-
-function renderQuestion() {
-  const q = questions[currentQ];
-  const pct = Math.round((currentQ / questions.length) * 100);
-
-  document.getElementById('prog-label').textContent = `PREGUNTA ${currentQ+1} DE ${questions.length}`;
-  document.getElementById('prog-pct').textContent = pct + '%';
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('q-num').textContent = `0${currentQ+1} / 0${questions.length}`;
-  document.getElementById('q-text').textContent = q.text;
-
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  const letters = ['A','B','C','D'];
-  q.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt.text}</span>`;
-    btn.onclick = () => selectOption(i, btn, opt.archetype);
-    grid.appendChild(btn);
-  });
-
-  selectedOption = null;
-  const nextBtn = document.getElementById('btn-next');
-  nextBtn.classList.remove('ready');
-  nextBtn.textContent = currentQ < questions.length - 1 ? 'Siguiente pregunta →' : 'Ver mi resultado →';
-}
-
-function selectOption(idx, btnEl, archetype) {
-  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-  btnEl.classList.add('selected');
-  selectedOption = archetype;
-  document.getElementById('btn-next').classList.add('ready');
-}
-
-function nextQuestion() {
-  if (selectedOption === null) return;
-  scores[selectedOption] += 2;
-  currentQ++;
-  if (currentQ >= questions.length) {
-    showResult();
-  } else {
-    // Re-animate the card
-    const card = document.querySelector('.question-card');
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(16px)';
-    setTimeout(() => {
-      renderQuestion();
-      card.style.transition = 'opacity 0.35s, transform 0.35s';
-      card.style.opacity = '1';
-      card.style.transform = 'translateY(0)';
-    }, 200);
-  }
-}
-
-function showResult() {
-  // Find winner
-  let winner = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
-  const data = archetypes[winner];
-
-  // Badge
-  const badge = document.getElementById('arch-badge');
-  badge.style.color = data.color;
-  badge.style.borderColor = data.color;
-  badge.style.background = data.color + '15';
-  document.getElementById('arch-icon').textContent = data.icon;
-  document.getElementById('arch-name').textContent = data.name;
-
-  // Brand card
-  const card = document.getElementById('brand-card');
-  card.style.borderColor = data.color + '55';
-  card.style.background = data.color + '08';
-  document.getElementById('brand-icon').textContent = data.brandIcon;
-  document.getElementById('brand-name').textContent = data.brand;
-  document.getElementById('brand-name').style.color = data.color;
-  document.getElementById('brand-tagline').textContent = '"' + data.tagline + '"';
-  document.getElementById('brand-desc').textContent = data.desc;
-  document.getElementById('arg-proposito').textContent = data.proposito;
-  document.getElementById('arg-comunicacion').textContent = data.comunicacion;
-  document.getElementById('arg-competitivo').textContent = data.competitivo;
-
-  // Competitors map
-  const grid = document.getElementById('comp-grid');
-  grid.innerHTML = '';
-  allCompetitors.forEach(comp => {
-    const color = archetypes[comp.key].color;
-    const isYou = comp.key === winner;
-    const el = document.createElement('div');
-    el.className = 'comp-item' + (isYou ? ' is-you' : '');
-    el.style.color = color;
-    el.innerHTML = `
-      <span class="comp-emoji">${archetypes[comp.key].brandIcon}</span>
-      <div class="comp-info">
-        <div class="comp-brand" style="color:${color}">${comp.brand}</div>
-        <div class="comp-arch">${comp.archLabel}</div>
-      </div>
-      ${isYou ? `<span class="you-tag" style="background:${color}">TÚ</span>` : ''}
-    `;
-    grid.appendChild(el);
-  });
-
-  // QR
-  const url = window.location.href.split('?')[0];
-  document.getElementById('qr-url-label').textContent = url;
-  document.getElementById('qrcode').innerHTML = '';
-  try {
-    new QRCode(document.getElementById('qrcode'), {
-      text: url,
-      width: 140,
-      height: 140,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch(e) {
-    document.getElementById('qrcode').textContent = '(Sube el archivo a un servidor para ver el QR)';
-  }
-
-  showScreen('result');
-}
-
-function restartQuiz() {
-  currentQ = 0;
-  scores = { gobernante:0, creador:0, companero:0, mago:0, sabio:0, heroe:0 };
-  showScreen('intro');
-}
-
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const target = document.getElementById('screen-' + name);
-  target.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-</script>
-</body>
-</html>
+    // Datos basados en el Framework de Samsung y teoría de Arquetipos
+    const quizData = [
+        {
+            q: "¿Cuál es el motor principal detrás de cada decisión de la marca?",
+            options: [
+                { t: "Mantener el orden, la excelencia y el liderazgo del mercado.", a: "gobernante" },
+                { t: "Innovar y crear cosas que nadie ha imaginado antes.", a: "creador" },
+                { t: "Ayudar a las personas a comprender el mundo con datos claros.", a: "sabio" },
+                { t: "Facilitar la vida diaria mediante la conexión y humildad.", a: "companero" }
+            ]
+        },
+        {
+            q: "Si la marca fuera una herramienta, sería...",
+            options: [
+                { t: "Un centro de control que gestiona todo con precisión.", a: "gobernante" },
+                { t: "Un lienzo infinito para crear nuevas realidades.", a: "creador" },
+                { t: "Una enciclopedia digital de verdad absoluta.", a: "sabio" },
+                { t: "Un puente que conecta a las personas comunes.", a: "companero" }
+            ]
+        },
+        {
+            q: "¿Cómo es el tono de voz de su comunicación oficial?",
+            options: [
+                { t: "Autoritario, sofisticado y extremadamente seguro.", a: "gobernante" },
+                { t: "Inspirador, visualmente rico y único.", a: "creador" },
+                { t: "Objetivo, experto y basado en hechos.", a: "sabio" },
+                { t: "Cercano, auténtico e inclusivo.", a: "companero" }
+            ]
+        },
+        {
+            q:
